@@ -12,15 +12,19 @@ const getProcesos =  async (req, res) => {
 
 // Crear un nuevo proceso
 const createProceso = async (req, res) => {
-    const { nombre, propietario_id, estado_actual } = req.body;
+    const { nombre, descripcion, responsable_id, equipo_asignado, horas_hombre, proceso_padre_id } = req.body;
 
     try {
         const pool = await getConnection();
-        const result = await pool.request()
+        await pool.request()
             .input('nombre', sql.NVarChar, nombre)
-            .input('estado_actual', sql.NVarChar, estado_actual || null)
-            .query(`INSERT INTO Procesos (nombre, estado_actual) 
-                    VALUES (@nombre, @estado_actual)`);
+            .input('descripcion', sql.NVarChar, descripcion)
+            .input('responsable_id', sql.Int, responsable_id || null)
+            .input('equipo_asignado', sql.NVarChar, equipo_asignado)
+            .input('horas_hombre', sql.Decimal(10, 2), horas_hombre)
+            .input('proceso_padre_id', sql.Int, proceso_padre_id || null)
+            .query(`INSERT INTO Procesos (nombre, descripcion, responsable_id, equipo_asignado, horas_hombre, proceso_padre_id) 
+                    VALUES (@nombre, @descripcion, @responsable_id, @equipo_asignado, @horas_hombre, @proceso_padre_id)`);
         res.status(201).json({ message: 'Proceso creado exitosamente' });
     } catch (err) {
         console.error('Error al crear el proceso:', err);
@@ -29,41 +33,46 @@ const createProceso = async (req, res) => {
 };
 
 
+
 const getProceso = async (req, res) => {
     try {
-        console.log(req.params.id);
         const { id } = req.params;
         const pool = await getConnection();
         const result = await pool.request()
             .input('id', sql.Int, id)
             .query('SELECT * FROM Procesos WHERE proceso_id = @id');
-        console.log(result);
-        res.json(result.recordset);
+        res.json(result.recordset[0]);
     } catch (err) {
         console.error('Error al obtener el proceso:', err);
         res.status(500).json({ error: 'Error al obtener el proceso' });
     }
-}
+};
+
 
 
 const updateProceso = async (req, res) => {
     try {
         const { id } = req.params;
-        const { nombre, estado_actual, propietario_id } = req.body;
+        const { nombre, descripcion, responsable_id, equipo_asignado, horas_hombre, proceso_padre_id } = req.body;
         const pool = await getConnection();
-        const result = await pool.request()
+        await pool.request()
             .input('nombre', sql.NVarChar, nombre)
-            .input('estado_actual', sql.NVarChar, estado_actual || null)
-            .input('propietario_id', sql.Int, propietario_id || null)
+            .input('descripcion', sql.NVarChar, descripcion)
+            .input('responsable_id', sql.Int, responsable_id || null)
+            .input('equipo_asignado', sql.NVarChar, equipo_asignado)
+            .input('horas_hombre', sql.Decimal(10, 2), horas_hombre)
+            .input('proceso_padre_id', sql.Int, proceso_padre_id || null)
             .input('id', sql.Int, id)
             .query(`UPDATE Procesos 
                     SET nombre = @nombre, 
-                        estado_actual = @estado_actual, 
-                        propietario_id = @propietario_id 
+                        descripcion = @descripcion, 
+                        responsable_id = @responsable_id,
+                        equipo_asignado = @equipo_asignado,
+                        horas_hombre = @horas_hombre,
+                        proceso_padre_id = @proceso_padre_id
                     WHERE proceso_id = @id`);
         
         res.json({ message: 'Proceso actualizado exitosamente' });
-        console.log(result);
     } catch (err) {
         console.error('Error al actualizar el proceso:', err);
         res.status(500).json({ error: 'Error al actualizar el proceso' });
