@@ -9,6 +9,7 @@ router.get('/usuarios', getUsuarios);
 
 router.get('/usuarios/:id', getUsuario);
 
+
 router.post('/usuario', createUsuario);
 
 
